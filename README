@@ -1,6 +1,6 @@
 readToTiger
 
-This is a program designed to take a fastq file and pipeline it through timmomatic, bwa, and tiger for the purpose of
+This is a unix based pipeline designed to take a fastq file through trimmomatic, bwa, and tiger for the purpose of
 finding over and under replicated regions within a genome.
 
 REQUIREMENTS
