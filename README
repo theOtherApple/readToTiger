@@ -1,0 +1,12 @@
+readToTiger
+
+This is a program designed to take a fastq file and pipeline it through timmomatic, bwa, and tiger for the purpose of
+finding over and under replicated regions within a genome.
+
+REQUIREMENTS
+readToTiger requires the following to be able to run:
+    • Python 3.9 or higher
+    • Trimmomatic (http://www.usadellab.org/cms/?page=trimmomatic)
+    • BWA
+
+
