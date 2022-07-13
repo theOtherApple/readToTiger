@@ -1,12 +1,7 @@
 import argparse
 import subprocess
-# Press ⌃R to execute it or replace it with your code.
-# Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
-
-##Add Tiger
 
 def read_args():
-	###############################
 	# Set up argument parser
 	argpar = argparse.ArgumentParser()
 	# Positional (non-optional) arguments
@@ -28,11 +23,9 @@ def read_args():
 	argpar.add_argument('-trail_q', help = '', default= 20)
 	argpar.add_argument('-min_len', help = '', default= 30)
 
-	###############################
 	# Read command line args
 	args = argpar.parse_args()
 
-	###############################
 	# Return command line args
 	return args
 
@@ -45,7 +38,6 @@ def trimmomatics(pathToTrim=None, threadNum=None, in_fasta_f=None, in_fasta_r=No
 	out_unpair1 = out_prefix + '_unpaired1.fq.gz'
 	out_pair2 = out_prefix + '_paired2.fq.gz'
 	out_unpair2 = out_prefix + '_unpaired2.fq.gz'
-	out_files = [out_pair1, out_unpair1 , out_pair2, out_unpair2]
 
 	#Run trimmomatic
 	subprocess.run(['java', '-classpath', pathToTrim, 'org.usadellab.trimmomatic.TrimmomaticPE', '-threads', threadNum,
@@ -61,7 +53,7 @@ def trimmomatics(pathToTrim=None, threadNum=None, in_fasta_f=None, in_fasta_r=No
 def run_bwa(thread_num, trimmed_for_inputs, trimmed_rev_inputs, ref_gen, out_prefix):
 	subprocess.run('bwa', 'index', ref_gen, out_prefix)
 	##Figure out trimmed_inputs
-	subprocess.run('bwa', 'mem', '-a', '-C', '-H','-M',  '-P', '-t', thread_num, out_prefix, trimmed_for_inputs, trimmed_rev_inputs)
+	subprocess.run('bwa', 'mem', '-a', '-C', '-H', '-M', '-P', '-t', thread_num, out_prefix, trimmed_for_inputs, trimmed_rev_inputs)
 	##Figure out parameters
 	#Used all parameters given, I suspect only -a, -M, -P is needed
 
@@ -90,3 +82,4 @@ if __name__ == '__main__':
 	run_bwa(threadNum=arguments.threadNum, trimmed_for_inputs=out_pair1,
 			trimmed_rev_inputs=out_pair2, ref_gen=arguments.ref_g, out_prefix=arguments.out_prefix)
 
+	##Add TIGER

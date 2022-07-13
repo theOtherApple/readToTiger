@@ -7,6 +7,10 @@ REQUIREMENTS
 readToTiger requires the following to be able to run:
     • Python 3.9 or higher
     • Trimmomatic (http://www.usadellab.org/cms/?page=trimmomatic)
-    • BWA
+    • BWA (http://bio-bwa.sourceforge.net)
+    • TIGER (https://github.com/TheKorenLab/TIGER)
+Note that these programs will also have their own requirements/dependencies.
 
-
+INSTALLATION & SET UP
+HOW TO USE
+LICENSE
