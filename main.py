@@ -1,5 +1,6 @@
 import argparse
 import subprocess
+import os
 
 
 def read_args():
@@ -21,6 +22,8 @@ def read_args():
 	argpar.add_argument('-seed_mis', help='', default=2)
 	argpar.add_argument('-pal_clip', help='', default=30)
 	argpar.add_argument('-sim_clip', help='', default=10)
+	argpar.add_argument('-min_adapt_len', help='', default=2)
+	argpar.add_argument('-both_reads', help='', default=True)
 	argpar.add_argument('-lead_q', help='', default=20)
 	argpar.add_argument('-trail_q', help='', default=20)
 	argpar.add_argument('-min_len', help='', default=30)
@@ -32,19 +35,36 @@ def read_args():
 	return args
 
 
+def create_output_directory(location, prefix):
+	# Directory all other directories will be put into
+	start_dir_path = os.path.join(location, prefix)
+	os.mkdir(start_dir_path)
+	# Directory for trimmomatic outputs
+	trim_dir_path = os.path.join(start_dir_path, 'trim')
+	os.mkdir(trim_dir_path)
+	# Directory for bwa outputs
+	bwa_dir_path = os.path.join(start_dir_path, 'bwa')
+	os.mkdir(bwa_dir_path)
+	# Directory for tiger outputs
+	tiger_dir_path = os.path.join(start_dir_path, 'tiger')
+	os.mkdir(tiger_dir_path)
+	# Library of all the paths to directories created
+	dir_paths = [start_dir_path, trim_dir_path, bwa_dir_path, tiger_dir_path]
+	return dir_paths
+
 def trimmomatics(pathToTrim, threadNum, in_fasta_f, in_fasta_r, out_prefix, out_loc, adaptor_path, seed_mis, pal_clip,
-				 sim_clip, leadq, trailq, min_len):
+				 sim_clip, min_adapt_len, both_reads, leadq, trailq, min_len):
 
 	# Make the output files and put the names in a dictionary.
-	out_pair1 = out_prefix + '_paired1.fq.gz'
-	out_unpair1 = out_prefix + '_unpaired1.fq.gz'
-	out_pair2 = out_prefix + '_paired2.fq.gz'
-	out_unpair2 = out_prefix + '_unpaired2.fq.gz'
+	out_pair1 = out_prefix + '_forward_paired.fq.gz'
+	out_unpair1 = out_prefix + '_forward_unpaired.fq.gz'
+	out_pair2 = out_prefix + '_reverse_paired.fq.gz'
+	out_unpair2 = out_prefix + '_reverse_unpaired.fq.gz'
 
 	#TODO Make this cleaner
-	trimcommand = 'java -classpath '
+	trimcommand = 'java -jar '
 	trimcommand += pathToTrim
-	#trimcommand +=' org.usadellab.trimmomatic.TrimmomaticPE -threads '
+	#trimcommand += ' org.usadellab.trimmomatic.TrimmomaticPE'
 	trimcommand += ' PE -threads '
 	trimcommand += str(threadNum)
 	trimcommand += ' -phred33 '
@@ -67,6 +87,10 @@ def trimmomatics(pathToTrim, threadNum, in_fasta_f, in_fasta_r, out_prefix, out_
 	trimcommand += str(pal_clip)
 	trimcommand += ':'
 	trimcommand += str(sim_clip)
+	trimcommand += ':'
+	trimcommand += str(min_adapt_len)
+	trimcommand += ':'
+	trimcommand += str(both_reads)
 	trimcommand += ' LEADING:'
 	trimcommand += str(leadq)
 	trimcommand += ' TRAILING:'
@@ -77,11 +101,13 @@ def trimmomatics(pathToTrim, threadNum, in_fasta_f, in_fasta_r, out_prefix, out_
 	print(trimcommand)
 
 	# TODO Run java program with proper arguments
-	# TODO figure out why org.usadellab.trimmomatic.TrimmomaticPE and PE is not found
+	# TODO have a designated spot for files (create folder in location specified by user)
 	# Run trimmomatic
 	# print(subprocess.run(trimcommand))
-	print(subprocess.run(trimcommand))
-
+	# print(subprocess.run(trimcommand))
+	output = subprocess.check_output(trimcommand, stderr=subprocess.PIPE)
+	print('output got')
+	print(output)
 	# Return the output files
 	return out_pair1, out_unpair1 , out_pair2, out_unpair2
 
@@ -103,18 +129,23 @@ def run_tiger():
 if __name__ == '__main__':
 	print("readtoTiger has started")
 	arguments = read_args()
-	# out_pair1, out_unpair1, out_pair2, out_unpair2 = \
-	print(trimmomatics(pathToTrim=arguments.trim_path, threadNum=arguments.thread_n[0], in_fasta_f=arguments.in_fasta_f,
-					   in_fasta_r=arguments.in_fasta_r,
-					   out_prefix=arguments.out_prefix,
-					   out_loc=arguments.out_loc,
-					   adaptor_path=arguments.adaptor_path,
-					   seed_mis=arguments.seed_mis,
-					   pal_clip=arguments.pal_clip,
-					   sim_clip=arguments.sim_clip,
-					   leadq=arguments.lead_q,
-					   trailq=arguments.trail_q,
-					   min_len=arguments.min_len))
+	create_output_directory(location = arguments.out_loc, prefix = arguments.out_prefix)
+
+	out_pair1, out_unpair1, out_pair2, out_unpair2 = trimmomatics(pathToTrim=arguments.trim_path,
+																	threadNum=arguments.thread_n[0],
+																	in_fasta_f=arguments.in_fasta_f,
+																	in_fasta_r=arguments.in_fasta_r,
+																	out_prefix=arguments.out_prefix,
+																	out_loc=fidsuaf9we0uf0s9duiojfoas,
+																	adaptor_path=arguments.adaptor_path,
+																	seed_mis=arguments.seed_mis,
+																	pal_clip=arguments.pal_clip,
+																	sim_clip=arguments.sim_clip,
+																	min_adapt_len=arguments.min_adapt_len,
+																	both_reads=arguments.both_reads,
+																	leadq=arguments.lead_q,
+																	trailq=arguments.trail_q,
+																	min_len=arguments.min_len)
 	# TODO Add BWA running
 	# run_bwa(threadNum=arguments.threadNum, trimmed_for_inputs=out_pair1,
 	# 		trimmed_rev_inputs=out_pair2, ref_gen=arguments.ref_g, out_prefix=arguments.out_prefix)
