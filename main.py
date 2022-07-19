@@ -1,6 +1,7 @@
 import argparse
 import subprocess
 import os
+import sys
 
 
 def read_args():
@@ -36,9 +37,15 @@ def read_args():
 
 
 def create_output_directory(location, prefix):
-	# Directory all other directories will be put into
+	# Directory all other directories will be put into with check for duplicate names
 	start_dir_path = os.path.join(location, prefix)
+	i = 1
+	if os.path.isdir(start_dir_path):
+		while os.path.isdir(start_dir_path + '_' + str(i)):
+			i = i + 1
+		start_dir_path = start_dir_path + '_' + str(i)
 	os.mkdir(start_dir_path)
+	print("Directory made for files at", start_dir_path)
 	# Directory for trimmomatic outputs
 	trim_dir_path = os.path.join(start_dir_path, 'trim')
 	os.mkdir(trim_dir_path)
@@ -52,7 +59,7 @@ def create_output_directory(location, prefix):
 	dir_paths = [start_dir_path, trim_dir_path, bwa_dir_path, tiger_dir_path]
 	return dir_paths
 
-def trimmomatics(pathToTrim, threadNum, in_fasta_f, in_fasta_r, out_prefix, out_loc, adaptor_path, seed_mis, pal_clip,
+def trimmomatics(path_to_trim, thread_num, in_fasta_f, in_fasta_r, out_prefix, out_loc, adaptor_path, seed_mis, pal_clip,
 				 sim_clip, min_adapt_len, both_reads, leadq, trailq, min_len):
 
 	# Make the output files and put the names in a dictionary.
@@ -63,10 +70,10 @@ def trimmomatics(pathToTrim, threadNum, in_fasta_f, in_fasta_r, out_prefix, out_
 
 	#TODO Make this cleaner
 	trimcommand = 'java -jar '
-	trimcommand += pathToTrim
+	trimcommand += path_to_trim
 	#trimcommand += ' org.usadellab.trimmomatic.TrimmomaticPE'
 	trimcommand += ' PE -threads '
-	trimcommand += str(threadNum)
+	trimcommand += str(thread_num)
 	trimcommand += ' -phred33 '
 	trimcommand += in_fasta_f
 	trimcommand += ' '
@@ -101,13 +108,11 @@ def trimmomatics(pathToTrim, threadNum, in_fasta_f, in_fasta_r, out_prefix, out_
 	print(trimcommand)
 
 	# TODO Run java program with proper arguments
-	# TODO have a designated spot for files (create folder in location specified by user)
 	# Run trimmomatic
 	# print(subprocess.run(trimcommand))
 	# print(subprocess.run(trimcommand))
-	output = subprocess.check_output(trimcommand, stderr=subprocess.PIPE)
+	os.system(trimcommand)
 	print('output got')
-	print(output)
 	# Return the output files
 	return out_pair1, out_unpair1 , out_pair2, out_unpair2
 
@@ -129,14 +134,13 @@ def run_tiger():
 if __name__ == '__main__':
 	print("readtoTiger has started")
 	arguments = read_args()
-	create_output_directory(location = arguments.out_loc, prefix = arguments.out_prefix)
-
-	out_pair1, out_unpair1, out_pair2, out_unpair2 = trimmomatics(pathToTrim=arguments.trim_path,
-																	threadNum=arguments.thread_n[0],
+	output_dir_loc = create_output_directory(location=arguments.out_loc, prefix=arguments.out_prefix)
+	out_pair1, out_unpair1, out_pair2, out_unpair2 = trimmomatics(path_to_trim=arguments.trim_path,
+																	thread_num=arguments.thread_n[0],
 																	in_fasta_f=arguments.in_fasta_f,
 																	in_fasta_r=arguments.in_fasta_r,
 																	out_prefix=arguments.out_prefix,
-																	out_loc=fidsuaf9we0uf0s9duiojfoas,
+																	out_loc=output_dir_loc[2],
 																	adaptor_path=arguments.adaptor_path,
 																	seed_mis=arguments.seed_mis,
 																	pal_clip=arguments.pal_clip,
