@@ -1,7 +1,6 @@
 import argparse
 import subprocess
 import os
-import sys
 
 
 def read_args():
@@ -79,13 +78,13 @@ def trimmomatics(path_to_trim, thread_num, in_fasta_f, in_fasta_r, out_prefix, o
 	trimcommand += ' '
 	trimcommand += in_fasta_r
 	trimcommand += ' '
-	trimcommand += out_pair1
+	trimcommand += os.path.join(out_loc, out_pair1)
 	trimcommand += ' '
-	trimcommand += out_unpair1
+	trimcommand += os.path.join(out_loc, out_unpair1)
 	trimcommand += ' '
-	trimcommand += out_pair2
+	trimcommand += os.path.join(out_loc, out_pair2)
 	trimcommand += ' '
-	trimcommand += out_unpair2
+	trimcommand += os.path.join(out_loc, out_unpair2)
 	trimcommand += ' ILLUMINACLIP:'
 	trimcommand += adaptor_path
 	trimcommand += ':'
@@ -107,11 +106,10 @@ def trimmomatics(path_to_trim, thread_num, in_fasta_f, in_fasta_r, out_prefix, o
 
 	print(trimcommand)
 
-	# TODO Run java program with proper arguments
+	# TODO Ensure proper forward and reverse files are being used
 	# Run trimmomatic
-	# print(subprocess.run(trimcommand))
-	# print(subprocess.run(trimcommand))
-	os.system(trimcommand)
+	#os.system(trimcommand)
+	subprocess.Popen(trimcommand, shell=True).wait()
 	print('output got')
 	# Return the output files
 	return out_pair1, out_unpair1 , out_pair2, out_unpair2
@@ -123,6 +121,7 @@ def run_bwa(thread_num, trimmed_for_inputs, trimmed_rev_inputs, ref_gen, out_pre
 	# TODO Figure out trimmed inputs
 	subprocess.run('bwa', 'mem', '-a', '-C', '-H', '-M', '-P', '-t', thread_num, out_prefix, trimmed_for_inputs, trimmed_rev_inputs)
 	# TODO Figure out parameters
+
 	# NOTE Used all parameters given, I suspect only -a, -M, -P is needed
 
 
