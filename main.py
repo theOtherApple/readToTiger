@@ -58,8 +58,9 @@ def create_output_directory(location, prefix):
 	dir_paths = [start_dir_path, trim_dir_path, bwa_dir_path, tiger_dir_path]
 	return dir_paths
 
-def trimmomatics(path_to_trim, thread_num, in_fasta_f, in_fasta_r, out_prefix, out_loc, adaptor_path, seed_mis, pal_clip,
-				 sim_clip, min_adapt_len, both_reads, leadq, trailq, min_len):
+
+def trimmomatics(path_to_trim, thread_num, in_fasta_f, in_fasta_r, out_prefix, out_loc, adaptor_path, seed_mis,
+				pal_clip, sim_clip, min_adapt_len, both_reads, lead_q, trail_q, min_len):
 
 	# Make the output files and put the names in a dictionary.
 	out_pair1 = out_prefix + '_forward_paired.fq.gz'
@@ -109,9 +110,9 @@ def trimmomatics(path_to_trim, thread_num, in_fasta_f, in_fasta_r, out_prefix, o
 	trim_command += ':'
 	trim_command += str(both_reads)
 	trim_command += ' LEADING:'
-	trim_command += str(leadq)
+	trim_command += str(lead_q)
 	trim_command += ' TRAILING:'
-	trim_command += str(trailq)
+	trim_command += str(trail_q)
 	trim_command += ' MINLEN:'
 	trim_command += str(min_len)
 
@@ -129,6 +130,7 @@ def run_bwa_index(ref_gen):
 	gen_index_input = 'bwa index ' + ref_gen
 	print(gen_index_input)
 	subprocess.Popen(gen_index_input, shell=True).wait()
+
 
 def run_bwa_mem(thread_num, trimmed_for_inputs, trimmed_rev_inputs, out_prefix, out_loc, ref_gen):
 	bwa_command = 'bwa mem -a -C -H -M -P -t '
@@ -171,7 +173,14 @@ def run_bwa_mem(thread_num, trimmed_for_inputs, trimmed_rev_inputs, out_prefix, 
 
 def run_tiger():
 	#TODO Finish this
-	subprocess.run('octave', 'TIGER_generate_processing_files.m')
+	tiger_command = 'generate_chromosome_mappability_mask.sh --ref '
+	tiger_command += REF_GENOME_PATH
+	tiger_command += '--k '
+	tiger_command += KMER_LENGTH
+	tiger_command += '--chr'
+	tiger_command += CHR
+	print(tiger_command)
+	subprocess.Popen(tiger_command, shell=True).wait()
 
 
 if __name__ == '__main__':
@@ -181,29 +190,29 @@ if __name__ == '__main__':
 
 	output_dir_loc = create_output_directory(location=arguments.out_loc, prefix=arguments.out_prefix)
 
-	out_pair1, out_unpair1, out_pair2, out_unpair2 = trimmomatics(path_to_trim=arguments.trim_path,
-																	thread_num=arguments.thread_n[0],
-																	in_fasta_f=arguments.in_fasta_f,
-																	in_fasta_r=arguments.in_fasta_r,
-																	out_prefix=arguments.out_prefix,
-																	out_loc=output_dir_loc[1],
-																	adaptor_path=arguments.adaptor_path,
-																	seed_mis=arguments.seed_mis,
-																	pal_clip=arguments.pal_clip,
-																	sim_clip=arguments.sim_clip,
-																	min_adapt_len=arguments.min_adapt_len,
-																	both_reads=arguments.both_reads,
-																	leadq=arguments.lead_q,
-																	trailq=arguments.trail_q,
-																	min_len=arguments.min_len)
+	out_pair_f, out_unpair_f, out_pair_r, out_unpair_r = trimmomatics(path_to_trim=arguments.trim_path,
+																		thread_num=arguments.thread_n[0],
+																		in_fasta_f=arguments.in_fasta_f,
+																		in_fasta_r=arguments.in_fasta_r,
+																		out_prefix=arguments.out_prefix,
+																		out_loc=output_dir_loc[1],
+																		adaptor_path=arguments.adaptor_path,
+																		seed_mis=arguments.seed_mis,
+																		pal_clip=arguments.pal_clip,
+																		sim_clip=arguments.sim_clip,
+																		min_adapt_len=arguments.min_adapt_len,
+																		both_reads=arguments.both_reads,
+																		lead_q=arguments.lead_q,
+																		trail_q=arguments.trail_q,
+																		min_len=arguments.min_len)
 
 	run_bwa_index(ref_gen=arguments.ref_g)
 
 	run_bwa_mem(thread_num=arguments.thread_n[0],
-													trimmed_for_inputs=out_pair1,
-													trimmed_rev_inputs=out_pair2,
-													out_prefix=arguments.out_prefix,
-													out_loc=output_dir_loc[2],
-													ref_gen=arguments.ref_g)
+				trimmed_for_inputs=out_pair_f,
+				trimmed_rev_inputs=out_pair_r,
+				out_prefix=arguments.out_prefix,
+				out_loc=output_dir_loc[2],
+				ref_gen=arguments.ref_g)
 
 	# TODO Add TIGER running
