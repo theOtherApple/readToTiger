@@ -51,15 +51,15 @@ def scalar_make(f, name, scalar_type, parameters):
         rows = parameters[0]
         cols = parameters[1]
         content = parameters[2]
-        chr = content[0]
+        chrom = content[0]
         start = content[1]
         end = content[2]
         f.write("# rows: " + str(rows) + '\n')
         f.write("# columns: " + str(cols) + '\n')
         i = 0
-        for j in chr:
-            f.write(chr[i] + '\t' + start[i] + '\t' + end[i]+ '\n')
-            ++i
+        for j in chrom:
+            f.write(str(chrom[i]) + '\t' + str(start[i]) + '\t' + str(end[i]) + '\n')
+            i = i + 1
 
     # TODO: make this an exception
     else:
@@ -94,7 +94,8 @@ if __name__ == '__main__':
     arguments = argpar.parse_args()
     # TODO remove this testing line of code that overrides arguments
     arguments_file = arguments.f
-    arguments_file = '/Volumes/melements/tiger_pipeline-main/example/gap.txt'
+    #arguments_file = '/Volumes/melements/tiger_pipeline-main/example/gap.txt'
+    arguments_file = '/Volumes/melements/dm6.fa_copy'
 
     chr_a = []
     start_a = []
@@ -117,7 +118,22 @@ if __name__ == '__main__':
 
         for line in tsv_file:
             chr_name = line[1]
-            if len(chr_name) < 4:
+            if len(chr_name) <= 5:
+                if "chrX" in chr_name:
+                    chr_name = "chrX"
+                elif "chrY" in chr_name:
+                    chr_name = "chrY"
+                elif "chr4" in chr_name:
+                    chr_name = "chr4"
+                elif "chr3L" in chr_name:
+                    chr_name = "chr3L"
+                elif "chr3R" in chr_name:
+                    chr_name = "chr3R"
+                elif "chr2L" in chr_name:
+                    chr_name = "chr2L"
+                elif "chr2R" in chr_name:
+                    chr_name = "chr2R"
+            else:
                 if "chrX" in chr_name:
                     chr_name = "chrX_"
                 elif "chrY" in chr_name:
@@ -128,17 +144,20 @@ if __name__ == '__main__':
             start_a.append(line[2])
             end_a.append(line[3])
 
+    #matfile_path = '/Volumes/melements/tiger_pipeline-main/example/test.m'
+    matfile_path = '/Volumes/melements/tiger_pipeline-main/example/full_test.m'
+
     if ((len(chr_a) != len(start_a)) or (len(end_a) != len(start_a))):
         print("error")
         # TODO make this an actual exception
     try:
         # matfile = open(arguments.o, "x")
         # TODO remove this testing line of code and replace it with one that actually gets the proper location on file
-        matfile = open('/Volumes/melements/tiger_pipeline-main/example/test.m', "x")
+        matfile = open(matfile_path, "x")
     except FileExistsError:
         # matfile = open(arguments.o, "w")
         # TODO remove this testing line of code and replace it with one that actually gets the proper location on file
-        matfile = open('/Volumes/melements/tiger_pipeline-main/example/test.m', "w")
+        matfile = open(matfile_path, "w")
 
     # TODO Remove all but the necessary lines
     # header_make(matfile, 'oct_v', 'loc')
@@ -149,4 +168,6 @@ if __name__ == '__main__':
     # matfile.write('\n')
     # scalar_make(matfile, '<cell-element>', 'matrix', [1, len(start_a), start_a])
     # matfile.write('\n')
-    scalar_make(matfile, 'Gap', 'matrix', [len(end_a), 3, [chr_a, start_a, end_a]])
+
+    #scalar_make(matfile, 'Gap', 'matrix', [len(end_a), 3, [chr_a, start_a, end_a]])
+    scalar_make(matfile, 'Sequence', 'matrix', [len(end_a), 3, [chr_a, start_a, end_a]])
